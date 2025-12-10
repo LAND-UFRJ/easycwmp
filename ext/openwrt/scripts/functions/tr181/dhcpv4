@@ -44,7 +44,7 @@ sub_entry_DHCPv4_Server_Pool() {
 }
 
 dhcp_pool_get_max_instance() {
-	local max=`$UCI_SHOW -X dhcp | grep "dhcp_pool_instance" | cut -d'=' -f2 | sed 's/[^0-9]*//g' | sort -nru | head -1`
+	local max=`$UCI_SHOW_X dhcp | grep "dhcp_pool_instance" | cut -d'=' -f2 | sed 's/[^0-9]*//g' | sort -nru | head -1`
 	echo ${max:-0}
 }
 
@@ -60,7 +60,7 @@ dhcp_pool_update_instance() {
 }
 
 dhcp_pool_browse_instances() {
-	local pool pools=`$UCI_SHOW -X dhcp | grep "dhcp\..*=dhcp" | cut -d "=" -f 1`
+	local pool pools=`$UCI_SHOW_X dhcp | grep "dhcp\..*=dhcp" | cut -d "=" -f 1`
 	for pool in $pools; do
 		local j=`dhcp_pool_update_instance $pool`
 		sub_entry_DHCPv4_Server_Pool  "$1" "$j" "$pool"
@@ -126,7 +126,7 @@ dhcpv4server_pool_set_Interface() {
 	[ "$tmp" = "$2" ] && return
 	local instance=${tmp%.}
 	[ "$tmp" = "$instance" ] && return
-	local network=`$UCI_SHOW -X network | grep "ip_int_instance=$instance" | cut -d'.' -f2`
+	local network=`$UCI_SHOW_X network | grep "ip_int_instance=$instance" | cut -d'.' -f2`
 	$UCI_SET $1.interface=$network
 	return 0
 }

@@ -81,12 +81,12 @@ sub_entry_WiFi_AccessPoint() {
 
 
 wifi_radio_get_max_instance() {
-	local max=`$UCI_SHOW -X wireless | grep "wifi_radio_instance" | cut -d'=' -f2 | sed 's/[^0-9]*//g' | sort -nru | head -1`
+	local max=`$UCI_SHOW_X wireless | grep "wifi_radio_instance" | cut -d'=' -f2 | sed 's/[^0-9]*//g' | sort -nru | head -1`
 	echo ${max:-0}
 }
 
 wifi_iface_get_max_instance() {
-	local max=`$UCI_SHOW -X wireless | grep "wifi_iface_instance" | cut -d'=' -f2 | sed 's/[^0-9]*//g' | sort -nru | head -1`
+	local max=`$UCI_SHOW_X wireless | grep "wifi_iface_instance" | cut -d'=' -f2 | sed 's/[^0-9]*//g' | sort -nru | head -1`
 	echo ${max:-0}
 }
 
@@ -113,7 +113,7 @@ wifi_iface_update_instance() {
 }
 
 wifi_radio_browse_instances() {
-	local radio radios=`$UCI_SHOW -X wireless | grep "wireless\..*=wifi-device" | cut -d "=" -f 1`
+	local radio radios=`$UCI_SHOW_X wireless | grep "wireless\..*=wifi-device" | cut -d "=" -f 1`
 	for radio in $radios; do
 		local j=`wifi_radio_update_instance $radio`
 		sub_entry_WiFi_Radio  "$1" "$j" "$radio"
@@ -121,7 +121,7 @@ wifi_radio_browse_instances() {
 }
 
 wifi_ssid_browse_instances() {
-	local iface ifaces=`$UCI_SHOW -X wireless | grep "wireless\..*=wifi-iface" | cut -d "=" -f 1`
+	local iface ifaces=`$UCI_SHOW_X wireless | grep "wireless\..*=wifi-iface" | cut -d "=" -f 1`
 	for iface in $ifaces; do
 		local j=`wifi_iface_update_instance $iface`
 		sub_entry_WiFi_SSID  "$1" "$j" "$iface"
@@ -129,7 +129,7 @@ wifi_ssid_browse_instances() {
 }
 
 wifi_ap_browse_instances() {
-	local iface ifaces=`$UCI_SHOW -X wireless | grep "wireless\..*=wifi-iface" | cut -d "=" -f 1`
+	local iface ifaces=`$UCI_SHOW_X wireless | grep "wireless\..*=wifi-iface" | cut -d "=" -f 1`
 	for iface in $ifaces; do
 		local j=`wifi_iface_update_instance $iface`
 		sub_entry_WiFi_AccessPoint  "$1" "$j" "$iface"
@@ -181,14 +181,27 @@ wifi_radio_get_Name() {
 	echo ${1#*.}
 }
 
+radio2phy() {
+	local path="`$UCI_GET $1.path`"
+	ls "/sys/devices/platform/$path/ieee80211/"
+}
+
 wifi_radio_get_FrequencyBands() {
-	local phy="phy${1#*radio}"
-	local freq=`iw phy $phy info | grep  "MHz.*dBm" | head -1 | awk '{print $2}'`
-	[ "${freq#24}" = "$freq" ] && echo "5GHz" || echo "2.4GHz"
+	local phy="`radio2phy ${1}`"
+	local freq="`iw phy $phy info | grep  "MHz.*dBm" | awk '{print $2}'`"
+	local res=""
+	if echo "$freq" | grep -q "^5"; then
+		res="5GHz"
+	elif echo "$freq" | grep -q "^2"; then
+		[ -z "$res" ] || res="$res,"
+		res="${res}2.4GHz"
+	fi
+	echo "$res"
 }
 
 wifi_radio_get_ChannelsInUse() {
-	local freq="`iw phy phy0 info | grep  MHz.*dBm | awk -F'[][]' '{print $2}' |  tr '\n' ','`"
+	local phy="`radio2phy ${1}`"
+	local freq="`iw phy $phy info | grep  "MHz.*dBm" | awk -F'[][]' '{print $2}' |  tr '\n' ','`"
 	echo ${freq%,}
 }
 
@@ -198,7 +211,7 @@ wifi_radio_get_Channel() {
 	channel=`$UCI_GET $1.channel`
 	[ "$channel" != "" -a "$channel" != "auto" ] && { echo $channel; return; }
 
-	phy="phy${1#*radio}"
+	phy="`radio2phy ${1}`"
 	freq=`iw phy $phy info | grep  "MHz.*dBm" | head -1 | awk '{print $2}'`
 	if [ "${freq#24}" != "$freq" ]; then 
 		channel=`iw dev | grep "channel.*(24.*MHz)" | head -1 | awk '{print $2}'`
@@ -228,12 +241,12 @@ wifi_radio_set_AutoChannelEnable() {
 }
 
 wifi_radio_get_OperatingStandards() {
-	local val=`$UCI_GET $1.hwmode`
+	local val=`$UCI_GET $1.htmode`
 	echo ${val#11}
 }
 
 wifi_radio_set_OperatingStandards() {
-	$UCI_SET $1.hwmode=11$2
+	$UCI_SET $1.htmode=11$2
 }
 
 wifi_ssid_get_Enable() {
@@ -289,7 +302,7 @@ wifi_ssid_set_LowerLayers() {
 	[ "$tmp" = "$2" ] && return
 	local instance=${tmp%.}
 	[ "$tmp" = "$instance" ] && return
-	local device=`$UCI_SHOW -X wireless | grep "wifi_radio_instance=$instance" | cut -d'.' -f2`
+	local device=`$UCI_SHOW_X wireless | grep "wifi_radio_instance=$instance" | cut -d'.' -f2`
 	$UCI_SET $1.device=$device
 }
 
@@ -313,7 +326,7 @@ wifi_ssid_set_X_IPInterface() {
 	[ "$tmp" = "$2" ] && return
 	local instance=${tmp%.}
 	[ "$tmp" = "$instance" ] && return
-	local network=`$UCI_SHOW -X network | grep "ip_int_instance=$instance" | cut -d'.' -f2`
+	local network=`$UCI_SHOW_X network | grep "ip_int_instance=$instance" | cut -d'.' -f2`
 	$UCI_SET $1.network=$network
 }
 
@@ -335,7 +348,7 @@ wifi_ap_get_Status() {
 }
 
 wifi_ap_get_ModesSupported() {
-	echo "None,WEP-64,WEP-128,WPA-Personal,WPA2-Personal,WPA-WPA2-Personal,WPA-Enterprise,WPA2-Enterprise,WPA-WPA2-Enterprise"
+	echo "None,WEP-64,WEP-128,WPA-Personal,WPA2-Personal,WPA-WPA2-Personal,WPA3-Personal,WP2-WPA3-Personal,WPA-Enterprise,WPA2-Enterprise,WPA-WPA2-Enterprise,WPA3-Enterprise"
 }
 
 wifi_ap_get_ModeEnabled() {
@@ -343,6 +356,12 @@ wifi_ap_get_ModeEnabled() {
 	local encryption=`$UCI_GET $1.encryption`
 	
 	case "$encryption" in
+		"sae-mixed"*)
+			echo "WPA3-Personal"
+			;;
+		"sae"*)
+			echo "WPA2-WPA3-Personal"
+			;;
 		"psk2"*)
 			echo "WPA2-Personal"
 			;;
@@ -354,6 +373,9 @@ wifi_ap_get_ModeEnabled() {
 			;;
 		"wpa2"*)
 			echo "WPA2-Enterprise"
+			;;
+		"wpa3"*)
+			echo "WPA3-Enterprise"
 			;;
 		"wpa-mixed"*)
 			echo "WPA-WPA2-Enterprise"
@@ -378,6 +400,12 @@ wifi_ap_set_ModeEnabled() {
 	[ "$encryption" = "$2" ] && return 0
 	
 	case "$2" in
+		"WPA3-Personal")
+			$UCI_SET $1.encryption="sae"
+			;;
+		"WPA2-WPA3-Personal")
+			$UCI_SET $1.encryption="sae-mixed"
+			;;
 		"WPA2-Personal")
 			$UCI_SET $1.encryption="psk2"
 			;;
@@ -386,6 +414,9 @@ wifi_ap_set_ModeEnabled() {
 			;;
 		"WPA-Personal")
 			$UCI_SET $1.encryption="psk"
+			;;
+		"WPA3-Enterprise")
+			$UCI_SET $1.encryption="wpa3"
 			;;
 		"WPA2-Enterprise")
 			$UCI_SET $1.encryption="wpa2"
