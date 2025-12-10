@@ -1,6 +1,16 @@
 bin_PROGRAMS = easycwmpd
 
 easycwmpd_SOURCES =		\
+	../src/microxml/mxml-attr.c \
+	../src/microxml/mxml-entity.c \
+	../src/microxml/mxml-file.c \
+	../src/microxml/mxml-get.c \
+	../src/microxml/mxml-index.c \
+	../src/microxml/mxml-node.c \
+	../src/microxml/mxml-private.c \
+	../src/microxml/mxml-search.c \
+	../src/microxml/mxml-set.c \
+	../src/microxml/mxml-string.c \
 	../src/backup.c		\
 	../src/backup.h		\
 	../src/config.h		\
@@ -29,7 +39,7 @@ easycwmpd_SOURCES =		\
 	../src/xml.c       	\
 	../src/base64.h		\
 	../src/base64.c		\
-	../src/basicauth.h  	\
+	../src/basicauth.h  \
 	../src/basicauth.c
 
 easycwmpd_CFLAGS =		\
@@ -37,7 +47,6 @@ easycwmpd_CFLAGS =		\
 	$(LIBUCI_CFLAGS)	\
 	$(LIBUBOX_CFLAGS)	\
 	$(LIBUBUS_CFLAGS)	\
-	$(MICROXML_CFLAGS)	\
 	$(LIBCURL_CFLAGS)
 
 easycwmpd_LDFLAGS =		\
@@ -45,7 +54,6 @@ easycwmpd_LDFLAGS =		\
 	$(LIBUCI_LDFLAGS)	\
 	$(LIBUBOX_LDFLAGS)	\
 	$(LIBUBUS_LDFLAGS)	\
-	$(MICROXML_LDFLAGS)	\
 	$(LIBCURL_LDFLAGS)
 
 easycwmpd_LDADD =		\

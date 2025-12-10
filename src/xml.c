@@ -13,7 +13,7 @@
 
 #include <stdbool.h>
 #include <libubox/uloop.h>
-#include <microxml.h>
+#include "microxml/microxml.h"
 
 #include "xml.h"
 #include "backup.h"

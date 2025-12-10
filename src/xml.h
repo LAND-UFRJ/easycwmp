@@ -13,7 +13,7 @@
 #ifndef _EASYCWMP_XML_H__
 #define _EASYCWMP_XML_H__
 
-#include <microxml.h>
+#include "microxml/microxml.h"
 #include <libubox/uloop.h>
 
 #define SECDTOMSEC 1000

@@ -14,7 +14,7 @@
 #define _EASYCWMP_CWMP_H__
 
 #include <libubox/uloop.h>
-#include <microxml.h>
+#include "microxml/microxml.h"
 
 #define MAX_DOWNLOAD 10
 #define MAX_UPLOAD 10
