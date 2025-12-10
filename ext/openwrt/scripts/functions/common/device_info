@@ -21,6 +21,7 @@ entry_execute_method_root_DeviceInfo() {
 		common_execute_method_param "$DMROOT.DeviceInfo.ProvisioningCode" "1" "$UCI_GET easycwmp.@local[0].provisioning_code" "device_info_set_provisioningcode" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.Manufacturer" "0" "$UCI_GET easycwmp.@device[0].manufacturer" "" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.ManufacturerOUI" "0" "$UCI_GET easycwmp.@device[0].oui" "" "" "1"
+		common_execute_method_param "$DMROOT.DeviceInfo.ModelName" "0" "cat /tmp/sysinfo/model" "" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.ProductClass" "0" "$UCI_GET easycwmp.@device[0].product_class" "" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.SerialNumber" "0" "$UCI_GET easycwmp.@device[0].serial_number" "" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.HardwareVersion" "0" "$UCI_GET easycwmp.@device[0].hardware_version" "" "" "1"
