@@ -2,7 +2,7 @@
 
 config local
 	option enable '1'
-	option interface eth0
+	option interface wan
 	option port 7547
 	option ubus_socket /var/run/ubus.sock
 	option date_format %FT%T%z
