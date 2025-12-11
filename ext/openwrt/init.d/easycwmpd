@@ -21,25 +21,19 @@ init_device_info() {
 	oval=$($UCI_GET easycwmp.@device[0].product_class)
 	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].product_class="$val"; change=1; }
 
-	val=$(omnia-mcutool -v | sed -n 's|Board firmware type: ||p')
-	[ -n "$val" ] || val=$(< /etc/device_info grep "DEVICE_REVISION" | cut -f 2 -d '=' | sed -e "s/['\"]//g" -e "s'[]:@/?#[!$&()*+,;=]'_'g")
+	val=$(< /etc/device_info grep "DEVICE_REVISION" | cut -f 2 -d '=' | sed -e "s/['\"]//g" -e "s'[]:@/?#[!$&()*+,;=]'_'g")
 	oval=$($UCI_GET easycwmp.@device[0].hardware_version)
 	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].hardware_version="$val"; change=1; }
 
-	val=$(cat /etc/turris-version)
-	[ -n "$val" ] || val=$(cat /etc/openwrt_version)
+	val=$(cat /etc/openwrt_version)
 	oval=$($UCI_GET easycwmp.@device[0].software_version)
 	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].software_version="$val"; change=1; }
-	
-	#The same thing here for OUI and SerialNumber
 
-	val=$(crypto-wrapper mac-address | sed 's/':'//g' | awk '{print substr(toupper($0),1,6)}')
-	[ -n "$val" ] || val=$(< /sys/class/net/eth0/address sed 's/':'//g' | awk '{print substr(toupper($0),1,6)}')
+	val=$(< /sys/class/net/eth0/address sed 's/':'//g' | awk '{print substr(toupper($0),1,6)}')
 	oval=$($UCI_GET easycwmp.@device[0].oui)
 	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].oui="$val"; change=1; }
 
-	val=$(crypto-wrapper serial-number)
-	[ -n "$val" ] || val=$(< /sys/class/net/eth0/address sed 's/':'//g' | awk '{print toupper($0)}')
+	val=$(< /sys/class/net/eth0/address sed 's/':'//g' | awk '{print toupper($0)}')
 	oval=$($UCI_GET easycwmp.@device[0].serial_number)
 	[ -n "$val" -a "$val" != "$oval" ] && { $UCI_SET easycwmp.@device[0].serial_number="$val"; change=1; }
 
