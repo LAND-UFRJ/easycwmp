@@ -58,7 +58,8 @@ management_server_set_periodic_enable() {
 management_server_get_connection_request_url() {
 	local val
 	if [ -z "$default_management_server_connection_request_url" ]; then
-		local intf=`$UCI_GET easycwmp.@local[0].interface 2> /dev/null`
+		local wan=`$UCI_GET easycwmp.@local[0].interface 2> /dev/null`
+		local intf=`$UCI_GET network.${wan}.device 2> /dev/null`
 		local ip=`ifconfig "$intf" | grep inet | sed 's/^ *//g' | cut -f 2 -d ' '|cut -f 2 -d ':'`
 		local port=`$UCI_GET easycwmp.@local[0].port 2> /dev/null`
 
